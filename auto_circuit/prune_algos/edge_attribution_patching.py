@@ -1,9 +1,9 @@
-from typing import Optional, Set
+from typing import Optional, Set, Callable
 
 import torch as t
 import transformer_lens as tl
 
-from auto_circuit.data import PromptDataLoader
+from auto_circuit.data import PromptDataLoader, PromptPairBatch
 from auto_circuit.types import Edge, PruneScores
 from auto_circuit.utils.graph_utils import (
     set_all_masks,
@@ -17,6 +17,7 @@ def edge_attribution_patching_prune_scores(
     dataloader: PromptDataLoader,
     official_edges: Optional[Set[Edge]],
     answer_diff: bool = True,
+    loss_fn: Optional[Callable[[t.Tensor, PromptPairBatch], t.Tensor]] = None,
 ) -> PruneScores:
     """
     Prune scores by Edge Attribution patching.
@@ -79,10 +80,13 @@ def edge_attribution_patching_prune_scores(
 
         model.add_hook(edge_acdcpp_back_filter, backward_cache_hook, "bwd")
         logits = model(batch.clean)[out_slice]
-        if answer_diff:
-            loss = -batch_avg_answer_diff(logits, batch)
+        if loss_fn is not None:
+            loss = loss_fn(logits, batch)
         else:
-            loss = -batch_avg_answer_val(logits, batch)
+            if answer_diff:
+                loss = -batch_avg_answer_diff(logits, batch)
+            else:
+                loss = -batch_avg_answer_val(logits, batch)
         loss.backward()
         model.reset_hooks()
 
