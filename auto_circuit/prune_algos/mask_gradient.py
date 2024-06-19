@@ -1,4 +1,4 @@
-from typing import Dict, Literal, Optional, Set
+from typing import Callable, Dict, Literal, Optional, Set
 
 import torch as t
 from torch.nn.functional import log_softmax
