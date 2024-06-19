@@ -21,7 +21,7 @@ def mask_gradient_prune_scores(
     dataloader: PromptDataLoader,
     official_edges: Optional[Set[Edge]],
     grad_function: Literal["logit", "prob", "logprob", "logit_exp"],
-    answer_function: Literal["avg_diff", "avg_val", "mse"],
+    answer_function: Literal["avg_diff", "avg_val", "mse"] | Callable[[t.Tensor, PromptPairBatch], t.Tensor],
     mask_val: Optional[float] = None,
     integrated_grad_samples: Optional[int] = None,
 ) -> PruneScores:
@@ -92,14 +92,17 @@ def mask_gradient_prune_scores(
                     else:
                         raise ValueError(f"Unknown grad_function: {grad_function}")
 
-                    if answer_function == "avg_diff":
-                        loss = -batch_avg_answer_diff(token_vals, batch)
-                    elif answer_function == "avg_val":
-                        loss = -batch_avg_answer_val(token_vals, batch)
-                    elif answer_function == "mse":
-                        loss = t.nn.functional.mse_loss(token_vals, batch.answers)
+                    if callable(answer_function):
+                        loss = answer_function(token_vals, batch)
                     else:
-                        raise ValueError(f"Unknown answer_function: {answer_function}")
+                        if answer_function == "avg_diff":
+                            loss = -batch_avg_answer_diff(token_vals, batch)
+                        elif answer_function == "avg_val":
+                            loss = -batch_avg_answer_val(token_vals, batch)
+                        elif answer_function == "mse":
+                            loss = t.nn.functional.mse_loss(token_vals, batch.answers)
+                        else:
+                            raise ValueError(f"Unknown answer_function: {answer_function}")
 
                     loss.backward()
 
