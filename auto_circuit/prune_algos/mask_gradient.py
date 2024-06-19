@@ -1,9 +1,9 @@
-from typing import Callable, Dict, Literal, Optional, Set
+from typing import Dict, Literal, Optional, Set, Callable
 
 import torch as t
 from torch.nn.functional import log_softmax
 
-from auto_circuit.data import PromptDataLoader
+from auto_circuit.data import PromptDataLoader, PromptPairBatch
 from auto_circuit.types import AblationType, BatchKey, Edge, PruneScores
 from auto_circuit.utils.ablation_activations import batch_src_ablations
 from auto_circuit.utils.custom_tqdm import tqdm
