@@ -17,7 +17,7 @@ kaleido = "0.2.1"  # Improved renderer for plotly
 blobfile = "2.0.2"
 word2word = "^1.0.0"
 vscode-tqdm = "4.66.2"  # My fork of tqdm that works in VSCode
-tracr-pypi = "1.0.0"  # My fork of tracr that is exactly the same (but on PyPI)
+tracr = { git = "https://github.com/FlyingPumba/tracr.git" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.3.3"
